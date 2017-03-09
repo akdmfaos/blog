@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+ 
+<mapper namespace="calendar"> 
+ 
+  <!-- 레코드 추가 -->
+  <insert id="create" parameterType="CalendarDTO">
+    <!-- keyProperty: 번호를 저장할 컬럼명, resultType: int숫자 형태 -->
+    <selectKey keyProperty="notice_no" resultType="int" order="BEFORE">
+      SELECT NVL(MAX(notice_no), 0)+1 as notice_no FROM notice
+      <!-- 
+      MySQL
+      SELECT IFNULL(MAX(calendarno), 0)+1 as calendarno FROM calendar
+       -->
+    </selectKey>
+    <!-- SQL 문장 뒤에는 ;이 있으면 안됨, ##: ?, CalendarDTO 객체의 값이 자동으로
+          #calendarno#: CalendarDTO.getCalendarno() 호출  -->
+    INSERT INTO calendar(notice_no, notice_labeldate, notice_label, notice_title, notice_content, notice_cnt, notice_date)
+    VALUES(#{notice_no}, #{notice_labeldate}, #{notice_label}, #{notice_title}, #{notice_content}, 0, sysdate)
+  </insert>
+ 
+  <select id="list" resultType="CalendarDTO">
+    SELECT notice_no, notice_labeldate, notice_label, notice_title, notice_content, notice_cnt, notice_date
+    FROM notice
+    ORDER BY notice_no DESC
+  </select>
+  
+  <!-- 1개의 레코드 출력 -->
+  <select id="read" parameterType="int" resultType="CalendarDTO">
+    SELECT notice_no, notice_labeldate, notice_label, notice_title, notice_content, notice_cnt, notice_date
+    FROM notice
+    WHERE notice_no = #{notice_no}
+  </select>
+ 
+  <!-- 글 수정 -->
+  <update id="update" parameterType="CalendarDTO">
+    UPDATE notice
+    SET notice_labeldate=#{notice_labeldate}, label=#{notice_label}, title=#{notice_title}, content=#{notice_content}
+    WHERE notice_no = #{notice_no}
+  </update>
+  
+  <delete id="delete" parameterType="int">
+    DELETE FROM notice
+    WHERE notice_no=#{notice_no}    
+  </delete>
+ 
+  <!-- 1개의 레코드 출력 -->
+  <select id="label" parameterType="String" resultType="CalendarDTO" >
+    SELECT notice_no, notice_labeldate, notice_label
+    FROM notice
+    WHERE notice_labeldate = #{notice_labeldate}
+    <!-- 최적화 ↑-->
+<!--    WHERE substr(labeldate, 1, 10) = #labeldate# -->
+    
+  </select>
+ 
+
+</mapper>

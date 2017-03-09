@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="notice">
+
+<delete id="delete" parameterType="int">
+delete from notice
+where notice_no = #{notice_no}
+
+</delete>
+
+
+<update id="update" parameterType="MemoDTO">
+ update notice     
+ set notice_title = #{notice_title},     
+ notice_content = #{notice_content}        
+ where notice_no = #{notice_no}   
+
+</update>
+
+
+<select id="read" parameterType="int" resultType="MemoDTO">
+select notice_no,notice_title,notice_content,to_char(notice_date,'yyyy-mm-dd') notice_date 
+from notice                                                          
+where notice_no = #{notice_no}                                                   
+
+</select>
+
+<insert id="create" parameterType="MemoDTO">
+insert into notice(notice_no,notice_title,notice_content,notice_date                                                                                            
+values((SELECT NVL(MAX(notice_no), 0) + 1 FROM notice),#{notice_title},#{notice_content},sysdate)               
+</insert>
+
+
+<select id="total" parameterType="Map" resultType="int">
+	select count(*) from notice
+	<where>
+		<if test="col=='title'">
+			notice_title like '%' ||#{word}||'%'
+		</if>
+		<if test="col=='content'">
+			notice_content like '%' ||#{word}||'%'
+		</if>
+	</where>
+</select>
+
+ <select id="list" parameterType="Map" resultType="MemoDTO">
+ select notice_no, notice_title, to_char(notice_date,'yyyy-mm-dd') notice_date, r   
+	from(                                                        
+		select notice_no, notice_title, notice_date,viewcnt,rownum r                  
+			from(                                                    
+		        select notice_no,notice_title,notice_date                  
+				from notice_no 
+				<where>
+				<if test="col=='title'">
+				notice_title like '%'||#{word}||'%'
+				</if>
+				<if test="col=='content'">
+				notice_content like '%'||#{word}||'%'
+				</if>
+				</where>
+	  	order by notice_no desc 
+ 	 )                            
+ )
+ <![CDATA[where r>=#{sno} and r<=#{eno}]]>                                       
+ </select>
+
+ 
+
+</mapper>
